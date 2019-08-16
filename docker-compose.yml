@@ -1,0 +1,98 @@
+version : '2'
+services :
+
+  php53:
+    container_name: php53-fpm
+    image : songwutk/php53-fpm
+    working_dir: "/var/www"
+    volumes:
+        - ./www/:/var/www
+    expose:
+      - "9000"
+
+  mysql:
+    container_name: mysql
+    image: mariadb:10.3
+    environment:
+        MYSQL_ROOT_PASSWORD: rootdocker
+    volumes:
+        - ./db/:/var/lib/mysql
+        - ./logs/mysql:/var/log/mysql
+    ports:
+      - 3306:3306
+      
+  apache53:
+    container_name: apache53
+    build: './build/apache/'
+    depends_on:
+      - php53
+      - mysql
+    ports:
+      - "801:80"
+    volumes:
+      - ./www/:/var/www/html
+      - ./conf/:/usr/local/apache2/conf
+      - ./logs/:/var/log/
+
+
+  apache72:
+     container_name: apache-php72
+     restart: always
+     build: ./build/apache72
+     volumes:
+       - ./apache.conf:/etc/apache2
+       - ./app:/var/www/html
+       - ./wp:/var/www/wp
+     environment:
+       - VIRTUAL_HOST_WEIGHT=1
+       - VIRTUAL_HOST=*
+     ports:
+       - "800:80"
+
+  pma:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    environment:
+        PMA_HOST : mysql
+    ports:
+      - "8000:80"
+
+  pgsql:
+    container_name: pgsql
+    image: postgres:11.0
+    environment:
+      - POSTGRES_PASSWORD=odoo
+      - POSTGRES_USER=odoo
+      - POSTGRES_DB=postgres
+    restart: always         #     run as a service
+    ports :
+        - "5432:5432"
+    volumes:
+      - ./log/pgsql:/var/log/postgresql
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+#    user : pgadmin4@pgadmin.org, passwd : admin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=pgadmin4@pgadmin.org
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "5050:80"
+    volumes:
+      - ./pgbackup/:/backup
+      - ./pgbackup/:/var/lib/pgadmin/storage/pgadmin4_pgadmin.org/backup
+
+
+#  nginx:
+#     container_name: nginx
+#     restart: always
+#     image: nginx
+#     volumes:
+#      - ./nginx:/etc/nginx/
+#      - ./nginx:/etc/nginx/conf.d 
+#      - ./log:/var/log/nginx
+#     ports:
+#      - 80:80
+
