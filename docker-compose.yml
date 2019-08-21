@@ -31,7 +31,7 @@ services :
       - "801:80"
     volumes:
       - ./www/:/var/www/html
-      - ./conf/:/usr/local/apache2/conf
+      - ./apache53.conf/:/usr/local/apache2/conf
       - ./logs/:/var/log/
 
 
