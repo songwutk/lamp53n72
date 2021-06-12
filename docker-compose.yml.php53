@@ -1,0 +1,45 @@
+version : '3'
+services :
+
+  php53:
+    container_name: php53-fpm
+    image : songwutk/php53-fpm
+    working_dir: "/var/www"
+    volumes:
+        - ./www/:/var/www
+    expose:
+      - "9000"
+
+  mysql:
+    container_name: mysql
+    image: mariadb:10.3
+    environment:
+        MYSQL_ROOT_PASSWORD: rootdocker
+    volumes:
+        - ./db/:/var/lib/mysql
+        - ./logs/mysql:/var/log/mysql
+    ports:
+      - 3306:3306
+      
+  apache53:
+    container_name: apache53
+    build: './build/apache/'
+    depends_on:
+      - php53
+      - mysql
+    ports:
+      - "80:80"
+    volumes:
+      - ./www/:/var/www/html
+      - ./apache53.conf/:/usr/local/apache2/conf
+      - ./logs/:/var/log/
+
+  pma:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    environment:
+        PMA_HOST : mysql
+    ports:
+      - "8000:80"
+ 
